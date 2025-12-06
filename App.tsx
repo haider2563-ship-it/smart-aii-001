@@ -48,24 +48,41 @@ const App: React.FC = () => {
         currentSection={currentSection} 
         onNavigate={setCurrentSection} 
         lang={lang}
+        onOpenLanguageModal={() => setIsLanguageModalOpen(true)}
       />
 
       <main className="container mx-auto px-4 py-8 animate-fade-in">
         {currentSection === Section.HOME && (
-          <section className="text-center max-w-2xl mx-auto mt-10">
-            <h2 className={`text-3xl font-bold text-primary-dark mb-4 ${lang === 'ur' ? 'font-urdu' : ''}`}>
+          <section className="text-center max-w-4xl mx-auto mt-6">
+            
+            {/* Prominent Header Card for Names */}
+            <div className="bg-gradient-to-r from-primary to-primary-dark text-white p-8 md:p-12 rounded-2xl shadow-xl mb-12 transform hover:scale-[1.01] transition-transform duration-300">
+               <p className={`text-lg md:text-xl opacity-80 mb-2 font-medium tracking-wide uppercase ${lang === 'ur' ? 'font-urdu' : ''}`}>
+                  {t.homeP1}
+               </p>
+               <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight mb-4 drop-shadow-md">
+                 Syed Haider
+               </h1>
+               <div className="w-24 h-1 bg-accent mx-auto mb-6 rounded-full"></div>
+               <div className="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-6 text-xl md:text-2xl font-medium text-white/90">
+                 <span>Talha Anwar</span>
+                 <span className="hidden md:inline text-accent">•</span>
+                 <span>Ahmad Habib</span>
+               </div>
+            </div>
+
+            <h2 className={`text-3xl font-bold text-primary-dark mb-6 ${lang === 'ur' ? 'font-urdu' : ''}`}>
                 {t.homeTitle}
             </h2>
-            <div className="bg-white p-6 rounded-lg shadow-md border-t-4 border-accent">
-                <p className="font-semibold text-accent mb-4">{t.homeP1}</p>
-                <p className={`text-lg leading-relaxed ${lang === 'ur' ? 'font-urdu text-xl' : ''}`}>
+            <div className="bg-white p-8 rounded-xl shadow-lg border-t-8 border-accent">
+                <p className={`text-lg md:text-xl leading-relaxed text-gray-700 ${lang === 'ur' ? 'font-urdu text-2xl leading-loose' : ''}`}>
                     {t.homeP2}
                 </p>
             </div>
             
             <button 
                 onClick={() => setCurrentSection(Section.SCAN)}
-                className={`mt-8 bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:-translate-y-1 ${lang === 'ur' ? 'font-urdu text-xl' : ''}`}
+                className={`mt-10 bg-primary hover:bg-primary-dark text-white font-bold py-4 px-10 rounded-full shadow-lg transition-all hover:-translate-y-1 hover:shadow-xl ${lang === 'ur' ? 'font-urdu text-xl' : 'text-lg'}`}
             >
                 {t.scanButton}
             </button>

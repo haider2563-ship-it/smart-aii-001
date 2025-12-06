@@ -1,8 +1,7 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { DiagnosisResult } from "../types";
+import { DiagnosisResult, WeatherResult, MarketResult } from "../types";
 
 // Initialize Gemini Client
-// Note: We use process.env.API_KEY as per the requirement.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 const diagnosisSchema = {
@@ -68,7 +67,7 @@ export const analyzeCropImage = async (base64Image: string, language: 'en' | 'ur
       config: {
         responseMimeType: "application/json",
         responseSchema: diagnosisSchema,
-        temperature: 0.4, // Lower temperature for more deterministic analysis
+        temperature: 0.4,
       }
     });
 
@@ -81,12 +80,79 @@ export const analyzeCropImage = async (base64Image: string, language: 'en' | 'ur
 
   } catch (error) {
     console.error("Gemini Analysis Error:", error);
-    // Fallback error response
     return {
       isPlant: false,
       message: language === 'ur' 
         ? "معذرت، تصویر کا تجزیہ کرنے میں خرابی پیش آئی۔ براہ کرم دوبارہ کوشش کریں۔"
         : "Sorry, there was an error analyzing the image. Please try again."
     };
+  }
+};
+
+export const getWeatherInsight = async (lat: number, lon: number, language: 'en' | 'ur'): Promise<WeatherResult> => {
+  try {
+    const model = 'gemini-2.5-flash';
+    const langInstruction = language === 'ur' ? 'Respond in Urdu.' : 'Respond in English.';
+    
+    // Using Search Grounding for real-time weather
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: `What is the current weather and 3-day forecast for coordinates ${lat}, ${lon}? 
+                 Provide a concise summary focused on agriculture (irrigation advice, pest risks due to humidity/heat).
+                 ${langInstruction}`,
+      config: {
+        tools: [{ googleSearch: {} }],
+        // responseMimeType and responseSchema are NOT allowed with googleSearch
+      },
+    });
+
+    // Extract search grounding sources
+    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const sources = groundingChunks
+      .map((chunk: any) => chunk.web ? { uri: chunk.web.uri, title: chunk.web.title } : null)
+      .filter((s: any) => s !== null);
+
+    return {
+      text: response.text || "No weather data available.",
+      sources: sources
+    };
+
+  } catch (error) {
+    console.error("Weather Analysis Error:", error);
+    throw error;
+  }
+};
+
+export const getMarketUpdates = async (language: 'en' | 'ur'): Promise<MarketResult> => {
+  try {
+    const model = 'gemini-2.5-flash';
+    const langInstruction = language === 'ur' ? 'Respond in Urdu.' : 'Respond in English.';
+    
+    // Using Search Grounding for real-time market prices
+    const response = await ai.models.generateContent({
+      model: model,
+      contents: `Search for the latest wholesale market prices (Mandi rates) in Pakistan today for major crops: Wheat, Rice (Basmati/Irri), Corn/Maize, Cotton, and Sugarcane.
+                 Provide a clear list or summary of rates per 40kg or 100kg.
+                 ${langInstruction}`,
+      config: {
+        tools: [{ googleSearch: {} }],
+        // responseMimeType and responseSchema are NOT allowed with googleSearch
+      },
+    });
+
+    // Extract search grounding sources
+    const groundingChunks = response.candidates?.[0]?.groundingMetadata?.groundingChunks || [];
+    const sources = groundingChunks
+      .map((chunk: any) => chunk.web ? { uri: chunk.web.uri, title: chunk.web.title } : null)
+      .filter((s: any) => s !== null);
+
+    return {
+      text: response.text || "No market data available.",
+      sources: sources
+    };
+
+  } catch (error) {
+    console.error("Market Analysis Error:", error);
+    throw error;
   }
 };

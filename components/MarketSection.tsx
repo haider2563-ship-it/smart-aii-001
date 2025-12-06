@@ -1,7 +1,7 @@
-import React from 'react';
-import { Translations } from '../types';
-import { MARKET_DATA } from '../constants';
-import { TrendingUp, DollarSign } from 'lucide-react';
+import React, { useState } from 'react';
+import { Translations, MarketResult } from '../types';
+import { getMarketUpdates } from '../services/geminiService';
+import { TrendingUp, DollarSign, Loader2, ExternalLink } from 'lucide-react';
 
 interface MarketSectionProps {
   t: Translations;
@@ -9,63 +9,107 @@ interface MarketSectionProps {
 }
 
 const MarketSection: React.FC<MarketSectionProps> = ({ t, lang }) => {
+  const [loading, setLoading] = useState(false);
+  const [marketData, setMarketData] = useState<MarketResult | null>(null);
+
+  const handleGetRates = async () => {
+    setLoading(true);
+    try {
+      const data = await getMarketUpdates(lang);
+      setMarketData(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto">
       <h2 className={`text-2xl font-bold text-accent border-b-2 border-primary pb-2 mb-6 ${lang === 'ur' ? 'font-urdu' : ''}`}>
         {t.marketTitle}
       </h2>
-      <p className={`mb-8 text-lg ${lang === 'ur' ? 'font-urdu' : ''}`}>
-        {t.marketP1}
-      </p>
+      
+      {/* Action Button Area */}
+      {!marketData && !loading && (
+        <div className="text-center py-10 bg-light-bg rounded-lg border-2 border-dashed border-primary/30">
+          <TrendingUp className="h-16 w-16 text-primary mx-auto mb-4" />
+          <p className="mb-6 text-lg text-text/80">
+            {lang === 'en' 
+             ? "Get the latest wholesale mandi rates for Wheat, Rice, Cotton, and more directly from online sources."
+             : "آن لائن ذرائع سے گندم، چاول، کپاس اور دیگر کے لیے تازہ ترین ہول سیل منڈی کے نرخ حاصل کریں۔"}
+          </p>
+          <button 
+            onClick={handleGetRates}
+            className={`flex items-center gap-2 mx-auto bg-primary hover:bg-primary-dark text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform hover:scale-105 ${lang === 'ur' ? 'font-urdu text-lg' : ''}`}
+          >
+            <DollarSign className="h-5 w-5" />
+            {t.marketBtn}
+          </button>
+        </div>
+      )}
 
-      <div className="overflow-x-auto rounded-lg shadow-lg">
-        <table className="w-full border-collapse bg-white">
-            <thead>
-                <tr className="bg-primary text-white">
-                    <th className={`p-4 text-left border-b border-primary-dark ${lang === 'ur' ? 'font-urdu text-right' : ''}`}>
-                        <div className="flex items-center gap-2">
-                           <SproutIcon /> {t.marketTH1}
-                        </div>
-                    </th>
-                    <th className={`p-4 text-left border-b border-primary-dark ${lang === 'ur' ? 'font-urdu text-right' : ''}`}>
-                        <div className="flex items-center gap-2">
-                           <TrendingUp className="w-4 h-4" /> {t.marketTH2}
-                        </div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                {MARKET_DATA.map((item, index) => (
-                    <tr key={index} className={`hover:bg-light-bg/50 transition-colors ${index % 2 === 0 ? 'bg-light-bg/20' : ''}`}>
-                        <td className={`p-4 border-b border-gray-200 ${lang === 'ur' ? 'font-urdu text-right text-lg' : 'text-lg'}`}>
-                            {lang === 'ur' ? getUrduCropName(item.name) : item.name}
-                        </td>
-                        <td className={`p-4 border-b border-gray-200 font-bold text-primary-dark ${lang === 'ur' ? 'font-urdu text-right text-xl' : 'text-xl'}`}>
-                            {item.price}
-                        </td>
-                    </tr>
+      {/* Loading State */}
+      {loading && (
+        <div className="text-center py-12">
+          <Loader2 className="h-12 w-12 text-accent animate-spin mx-auto mb-4" />
+          <p className={`text-xl font-bold text-primary-dark ${lang === 'ur' ? 'font-urdu' : ''}`}>
+            {t.marketLoading}
+          </p>
+        </div>
+      )}
+
+      {/* Result Display */}
+      {marketData && (
+        <div className="bg-light-bg p-8 rounded-lg shadow-md border-t-4 border-accent animate-fade-in">
+          <div className="flex items-start justify-between mb-6 border-b border-primary/20 pb-4">
+             <div className="flex items-center gap-3">
+               <TrendingUp className="w-10 h-10 text-accent" />
+               <h3 className={`text-2xl font-bold text-primary ${lang === 'ur' ? 'font-urdu' : ''}`}>
+                 {lang === 'en' ? "Market Analysis" : "مارکیٹ کا تجزیہ"}
+               </h3>
+             </div>
+             <button 
+                onClick={handleGetRates} 
+                className="text-sm text-primary underline hover:text-accent"
+             >
+                {lang === 'en' ? "Refresh Rates" : "ریٹس ریفریش کریں"}
+             </button>
+          </div>
+          
+          <div className={`prose prose-lg max-w-none text-text ${lang === 'ur' ? 'font-urdu text-right' : ''}`}>
+             <div className="whitespace-pre-wrap leading-relaxed">
+               {marketData.text}
+             </div>
+          </div>
+
+          {/* Source Links (Grounding) */}
+          {marketData.sources.length > 0 && (
+            <div className={`mt-8 pt-4 border-t border-gray-300 ${lang === 'ur' ? 'text-right' : ''}`}>
+              <h4 className={`font-bold text-sm text-gray-500 mb-2 uppercase tracking-wide ${lang === 'ur' ? 'font-urdu' : ''}`}>
+                {t.marketSources}
+              </h4>
+              <ul className="space-y-1">
+                {marketData.sources.map((source, idx) => (
+                  <li key={idx}>
+                    <a 
+                      href={source.uri} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 text-primary hover:underline text-sm truncate"
+                    >
+                      <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                      {source.title}
+                    </a>
+                  </li>
                 ))}
-            </tbody>
-        </table>
-      </div>
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
-
-// Helper for Urdu mapping (static for demo)
-function getUrduCropName(name: string): string {
-    const map: Record<string, string> = {
-        'Wheat': 'گندم',
-        'Rice': 'چاول',
-        'Corn': 'مکئی',
-        'Potatoes': 'آلو'
-    };
-    return map[name] || name;
-}
-
-// Simple icon component
-const SproutIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c1.1.8 1.8 2.2 2.3 3.7-2 .4-3.2.4-4.8-.3-1.2-.6-2.3-1.9-3-4.2 2.8-.5 4.4 0 5.5.8z"/><path d="M14.1 6a7 7 0 0 0-1.1 4c1.9-.1 3.3-.6 4.3-1.4 1.7-1.3 2.9-3.3 3-5.5-3 1.3-4.9 2.2-6.2 2.9z"/></svg>
-);
 
 export default MarketSection;

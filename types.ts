@@ -9,6 +9,15 @@ export enum Section {
   MARKET = 'market',
 }
 
+export interface CropData {
+  id: string;
+  name: string;
+  growth: number;
+  waterLevel: 'Low' | 'Medium' | 'High';
+  status: string;
+  fill: string;
+}
+
 export interface Translations {
   navTitle: string;
   navHome: string;
@@ -17,6 +26,7 @@ export interface Translations {
   navLearn: string;
   navWeather: string;
   navMarket: string;
+  navLanguage: string;
   homeTitle: string;
   homeP1: string;
   homeP2: string;
@@ -28,10 +38,13 @@ export interface Translations {
   aiStatusComplete: string;
   healthTitle: string;
   healthP1: string;
-  healthCard1Title: string;
-  healthCard1P: string;
-  healthCard2Title: string;
-  healthCard2P: string;
+  healthAddTitle: string;
+  healthFormName: string;
+  healthFormGrowth: string;
+  healthFormStatus: string;
+  healthFormBtn: string;
+  healthListTitle: string;
+  healthNoData: string;
   learnTitle: string;
   learnP1: string;
   learnCard1Title: string;
@@ -41,13 +54,14 @@ export interface Translations {
   learnCard3Title: string;
   learnCard3P: string;
   weatherTitle: string;
-  weatherCard1Title: string;
-  weatherCard1P1: string;
-  weatherCard1P2: string;
+  weatherBtn: string;
+  weatherLoading: string;
+  weatherError: string;
+  weatherSources: string;
   marketTitle: string;
-  marketP1: string;
-  marketTH1: string;
-  marketTH2: string;
+  marketBtn: string;
+  marketLoading: string;
+  marketSources: string;
   languageModalTitle: string;
   languageModalDesc: string;
   btnEnglish: string;
@@ -61,4 +75,14 @@ export interface DiagnosisResult {
   treatment?: string;
   alertLevel?: 'LOW' | 'MEDIUM' | 'HIGH';
   message?: string;
+}
+
+export interface WeatherResult {
+  text: string;
+  sources: Array<{ uri: string; title: string }>;
+}
+
+export interface MarketResult {
+  text: string;
+  sources: Array<{ uri: string; title: string }>;
 }

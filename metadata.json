@@ -2,6 +2,7 @@
   "name": "Copy of Smart AI Agriculture",
   "description": "AI-powered agricultural assistant for farmers with localized Urdu support, featuring real-time crop analysis, health monitoring, and market insights.",
   "requestFramePermissions": [
-    "camera"
+    "camera",
+    "geolocation"
   ]
 }

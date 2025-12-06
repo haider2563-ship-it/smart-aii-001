@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { Section, Translations } from '../types';
-import { Menu, X, Sprout } from 'lucide-react';
+import { Menu, X, Sprout, Globe } from 'lucide-react';
 
 interface NavigationProps {
   t: Translations;
   currentSection: Section;
   onNavigate: (section: Section) => void;
   lang: 'en' | 'ur';
+  onOpenLanguageModal: () => void;
 }
 
-const Navigation: React.FC<NavigationProps> = ({ t, currentSection, onNavigate, lang }) => {
+const Navigation: React.FC<NavigationProps> = ({ t, currentSection, onNavigate, lang, onOpenLanguageModal }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const navItems = [
@@ -38,7 +39,7 @@ const Navigation: React.FC<NavigationProps> = ({ t, currentSection, onNavigate, 
           </div>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex space-x-1 lg:space-x-4">
+          <div className="hidden md:flex space-x-1 lg:space-x-4 items-center">
             {navItems.map((item) => (
               <button
                 key={item.id}
@@ -52,6 +53,16 @@ const Navigation: React.FC<NavigationProps> = ({ t, currentSection, onNavigate, 
                 {item.label}
               </button>
             ))}
+
+            {/* Desktop Language Button */}
+            <button
+                onClick={onOpenLanguageModal}
+                className={`ml-2 flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium hover:bg-accent hover:text-white transition-colors border border-white/30 ${lang === 'ur' ? 'font-urdu' : ''}`}
+                title={lang === 'en' ? "Change Language" : "زبان تبدیل کریں"}
+            >
+                <Globe className="w-4 h-4" />
+                <span>{t.navLanguage}</span>
+            </button>
           </div>
 
           {/* Mobile Hamburger */}
@@ -83,6 +94,18 @@ const Navigation: React.FC<NavigationProps> = ({ t, currentSection, onNavigate, 
                 {item.label}
               </button>
             ))}
+
+            {/* Mobile Language Button */}
+            <button
+                onClick={() => {
+                    onOpenLanguageModal();
+                    setIsMenuOpen(false);
+                }}
+                className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-md text-base font-medium hover:bg-accent hover:text-white text-yellow-100 ${lang === 'ur' ? 'font-urdu flex-row-reverse text-right' : ''}`}
+            >
+                <Globe className="w-5 h-5" />
+                <span>{t.navLanguage}</span>
+            </button>
           </div>
         </div>
       )}
